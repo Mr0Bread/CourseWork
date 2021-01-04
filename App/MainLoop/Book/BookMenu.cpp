@@ -22,7 +22,8 @@ void BookMenu::printOptions() {
     Output::print("2. Add");
     Output::print("3. Remove");
     Output::print("4. Find");
-    Output::print("5. Back");
+    Output::print("5. Edit");
+    Output::print("6. Back");
 }
 
 void BookMenu::chooseOperation() {
@@ -42,6 +43,9 @@ void BookMenu::chooseOperation() {
             BookMenu::find();
             break;
         case 5:
+            BookMenu::edit();
+            break;
+        case 6:
             exit();
             break;
         default:
@@ -72,9 +76,9 @@ void BookMenu::showAll() {
 }
 
 void BookMenu::add() {
-    auto title = Input::askString("Enter book's title");
+    auto title = Input::askString(50, "Enter book's title");
     auto yearOfRelease = Input::askInt("Enter year of release");
-    auto language = Input::askString("Enter language book has been written in");
+    auto language = Input::askString(50, "Enter language book has been written in");
     auto pageQty = Input::askInt("Enter quantity of page");
     auto authorID = getAuthorId();
 
@@ -229,7 +233,7 @@ int BookMenu::getAuthorId() {
         Output::print(
                 "There is no authors in database so you have to create new one.\n"
                 "It's ID will be assigned to Book automatically"
-                );
+        );
         return assignIdOfNewAuthor();
     }
 
@@ -237,7 +241,7 @@ int BookMenu::getAuthorId() {
             "Do you want to\n"
             "1. Assign existing author\n"
             "2. Create new one and assign id of it"
-            );
+    );
     int id;
 
     bool run = true;
@@ -295,4 +299,170 @@ int BookMenu::assignExistingAuthorId() {
 int BookMenu::assignIdOfNewAuthor() {
     AuthorMenu::add();
     return AuthorStorage::getCounter() - 1;
+}
+
+void BookMenu::edit() {
+    int idToEdit = getIdOfBookToEdit();
+
+    if (idToEdit == -1) {
+        Output::print(
+                "There is no books in storage\n"
+                "Add at least one to be able to edit information"
+        );
+        return;
+    }
+
+    Book bookToEdit = BookStorage::loadById(idToEdit);
+    bool run = true;
+
+    while (run) {
+        int answer = Input::askInt(
+                "Enter what attribute you want to edit\n"
+                "1. Title\n"
+                "2. Author ID\n"
+                "3. Year of release\n"
+                "4. Language\n"
+                "5. Page Quantity\n"
+                "6. Save changes\n"
+                "7. Back"
+        );
+
+        switch (answer) {
+            case 1:
+                editTitle(&bookToEdit);
+                break;
+            case 2:
+                editAuthorId(&bookToEdit);
+                break;
+            case 3:
+                editYearOfRelease(&bookToEdit);
+                break;
+            case 4:
+                editLanguage(&bookToEdit);
+                break;
+            case 5:
+                editPageQuantity(&bookToEdit);
+                break;
+            case 6:
+                saveChanges(&bookToEdit);
+                break;
+            case 7:
+                run = false;
+                break;
+            default:
+                Output::print("Invalid command");
+                break;
+        }
+    }
+}
+
+int BookMenu::getIdOfBookToEdit() {
+    auto books = BookStorage::loadAll();
+    auto bookQty = books.size();
+
+    if (bookQty == 0) {
+        return -1;
+    }
+
+    auto ids = new int[bookQty];
+    bool run = true;
+    int idToReturn;
+
+    Output::print(
+            "Enter ID of Book you want to edit\n"
+            "Here is list of available IDs"
+    );
+
+    for (int i = 0; i < bookQty; ++i) {
+        ids[i] = books[i].id;
+        Output::print(ids[i]);
+    }
+
+    int answer = Input::askInt();
+
+    while (run) {
+        for (int i = 0; i < bookQty; ++i) {
+            if (ids[i] == answer) {
+                idToReturn = ids[i];
+                run = false;
+                break;
+            }
+        }
+
+        if (run) {
+            answer = Input::askInt(
+                    "Invalid ID is provided\n Enter one of the existing ones"
+            );
+        }
+    }
+
+    delete[] ids;
+    return idToReturn;
+}
+
+void BookMenu::editTitle(Book* pBook) {
+    auto newTitle = Input::askString(50, "Enter new title of Book");
+
+    for (int i = 0; i < sizeof(pBook->title); ++i) {
+        pBook->title[i] = newTitle[i];
+    }
+
+    Output::print("New title successfully saved");
+}
+
+void BookMenu::editAuthorId(Book* pBook) {
+    auto newAuthorId = getAuthorId();
+    pBook->authorId = newAuthorId;
+    Output::print("New Author ID successfully saved");
+}
+
+void BookMenu::editYearOfRelease(Book* pBook) {
+    auto newYearOfRelease = Input::askInt("Enter new year of release");
+    pBook->yearOfRelease = newYearOfRelease;
+    Output::print("New Year Of Release successfully saved");
+}
+
+void BookMenu::editLanguage(Book* pBook) {
+    auto newLanguage = Input::askString(50, "Enter new language");
+
+    for (int i = 0; i < sizeof(pBook->language); ++i) {
+        pBook->language[i] = newLanguage[i];
+    }
+
+    Output::print("New language successfully saved");
+}
+
+void BookMenu::editPageQuantity(Book* pBook) {
+    auto newPageQty = Input::askInt("Enter new page quantity");
+    pBook->pageQty = newPageQty;
+    Output::print("New page quantity successfully saved");
+}
+
+void BookMenu::saveChanges(Book* pBook) {
+    int answer = Input::askInt(
+            "Are you sure you want to save changes?\n"
+            "1. Yes\n"
+            "2. No\n"
+            "3. Back"
+    );
+
+    bool run = true;
+
+    while (run) {
+        switch (answer) {
+            case 1:
+                BookStorage::save(*pBook);
+                run = false;
+                break;
+            case 2:
+                run = false;
+                break;
+            case 3:
+                run = false;
+                break;
+            default:
+                answer = Input::askInt("Invalid command. Try again");
+                break;
+        }
+    }
 }

@@ -251,3 +251,38 @@ void AuthorStorage::findByPlaceOfBirth(const std::string& placeOfBirth) {
 int AuthorStorage::getCounter() {
     return counter;
 }
+
+void AuthorStorage::save(Author author) {
+    auto authors = loadAll();
+
+    for (auto& existingAuthor : authors) {
+        if (author.id == existingAuthor.id) {
+            existingAuthor.yearOfBirth = author.yearOfBirth;
+
+            for (int i = 0; i < sizeof(existingAuthor.name); ++i) {
+                existingAuthor.name[i] = author.name[i];
+                existingAuthor.surname[i] = author.surname[i];
+                existingAuthor.placeOfBirth[i] = author.placeOfBirth[i];
+            }
+
+            break;
+        }
+    }
+
+    saveToStorage(authors);
+    Output::print("Author saved");
+}
+
+Author AuthorStorage::loadById(int id) {
+    auto authors = loadAll();
+    Author authorToReturn{};
+
+    for (auto& author : authors) {
+        if (author.id == id) {
+            authorToReturn = author;
+            break;
+        }
+    }
+
+    return authorToReturn;
+}

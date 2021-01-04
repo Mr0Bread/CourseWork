@@ -9,8 +9,12 @@
 
 class Input {
 public:
-    static int askInt(const std::string message = "");
-    static std::string askString(const std::string message = "");
+    static int askInt(const std::string& message = "");
+
+    static std::string askString(const std::string& message = "");
+
+    static std::string askString(const int symbolLimit, const std::string& message = "");
+
     static void clearInputBuffer();
 };
 

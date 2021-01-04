@@ -51,6 +51,10 @@ public:
     static void findByYoBBefore(int yearOfBirth);
 
     static void findByPlaceOfBirth(const std::string& placeOfBirth);
+
+    static void save(Author author);
+
+    static Author loadById(int id);
 };
 
 

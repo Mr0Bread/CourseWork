@@ -21,7 +21,8 @@ void AuthorMenu::printOptions() {
     Output::print("2. Add");
     Output::print("3. Remove");
     Output::print("4. Find");
-    Output::print("5. Back");
+    Output::print("5. Edit");
+    Output::print("6. Back");
 }
 
 void AuthorMenu::chooseOperation() {
@@ -41,9 +42,13 @@ void AuthorMenu::chooseOperation() {
             AuthorMenu::find();
             break;
         case 5:
+            AuthorMenu::edit();
+            break;
+        case 6:
             exit();
             break;
         default:
+            Output::print("Invalid command");
             break;
     }
 }
@@ -71,9 +76,9 @@ void AuthorMenu::showAll() {
 }
 
 void AuthorMenu::add() {
-    auto name = Input::askString("Enter author's name");
-    auto surname = Input::askString("Enter author's surname");
-    auto placeOfBirth = Input::askString("Enter author's place of birth");
+    auto name = Input::askString(50, "Enter author's name");
+    auto surname = Input::askString(50, "Enter author's surname");
+    auto placeOfBirth = Input::askString(50, "Enter author's place of birth");
     auto yearOfBirth = Input::askInt("Enter author's year of birth");
     Author author{};
 
@@ -85,6 +90,57 @@ void AuthorMenu::add() {
 
     author.yearOfBirth = yearOfBirth;
     AuthorStorage::add(author);
+}
+
+void AuthorMenu::edit() {
+    int idToEdit = getIdOfAuthorToEdit();
+
+    if (idToEdit == -1) {
+        Output::print(
+                "There is no author in storage\n"
+                "Add at least one to be able to edit information"
+        );
+        return;
+    }
+
+    Author authorToEdit = AuthorStorage::loadById(idToEdit);
+    bool run = true;
+
+    while (run) {
+        int answer = Input::askInt(
+                "Enter what attribute you want to edit\n"
+                "1. Name\n"
+                "2. Surname\n"
+                "3. Year of birth\n"
+                "4. Place of birth\n"
+                "5. Save changes\n"
+                "6. Back"
+        );
+
+        switch (answer) {
+            case 1:
+                editName(&authorToEdit);
+                break;
+            case 2:
+                editSurname(&authorToEdit);
+                break;
+            case 3:
+                editYearOfBirth(&authorToEdit);
+                break;
+            case 4:
+                editPlaceOfBirth(&authorToEdit);
+                break;
+            case 5:
+                saveChanges(&authorToEdit);
+                break;
+            case 6:
+                run = false;
+                break;
+            default:
+                Output::print("Invalid command");
+                break;
+        }
+    }
 }
 
 void AuthorMenu::remove() {
@@ -154,7 +210,7 @@ void AuthorMenu::findByYearOfBirth() {
                 "2. After provided year\n"
                 "3. Before provided year\n"
                 "4. Go back"
-                );
+        );
 
         switch (answer) {
             case 1:
@@ -177,4 +233,113 @@ void AuthorMenu::findByYearOfBirth() {
 
 void AuthorMenu::findByPlaceOfBirth() {
     AuthorStorage::findByPlaceOfBirth(Input::askString("Enter place of birth"));
+}
+
+int AuthorMenu::getIdOfAuthorToEdit() {
+    auto authors = AuthorStorage::loadAll();
+    auto authorQty = authors.size();
+
+    if (authorQty == 0) {
+        return -1;
+    }
+
+    auto ids = new int[authorQty];
+    bool run = true;
+    int idToReturn;
+
+    Output::print(
+            "Enter ID of Author you want to edit\n"
+            "Here is list of available IDs"
+    );
+
+    for (int i = 0; i < authorQty; ++i) {
+        ids[i] = authors[i].id;
+        Output::print(ids[i]);
+    }
+
+    int answer = Input::askInt();
+
+    while (run) {
+        for (int i = 0; i < authorQty; ++i) {
+            if (ids[i] == answer) {
+                idToReturn = ids[i];
+                run = false;
+                break;
+            }
+        }
+
+        if (run) {
+            answer = Input::askInt(
+                    "Invalid ID is provided\n Enter one of the existing ones"
+            );
+        }
+    }
+
+    delete[] ids;
+    return idToReturn;
+}
+
+void AuthorMenu::editName(Author* pAuthor) {
+    auto newName = Input::askString(50, "Enter new name of Author");
+
+    for (int i = 0; i < sizeof(pAuthor->name); ++i) {
+        pAuthor->name[i] = newName[i];
+    }
+
+    Output::print("New name successfully saved");
+}
+
+void AuthorMenu::editSurname(Author* pAuthor) {
+    auto newSurname = Input::askString(50, "Enter new surname of Author");
+
+    for (int i = 0; i < sizeof(pAuthor->surname); ++i) {
+        pAuthor->surname[i] = newSurname[i];
+    }
+
+    Output::print("New surname successfully saved");
+}
+
+void AuthorMenu::editYearOfBirth(Author* pAuthor) {
+    auto newYearOfBirth = Input::askInt("Enter new year of birth");
+    pAuthor->yearOfBirth = newYearOfBirth;
+    Output::print("New Year Of Birth successfully saved");
+}
+
+void AuthorMenu::editPlaceOfBirth(Author* pAuthor) {
+    auto newPlaceOfBirth = Input::askString(50, "Enter Author's new place of birth");
+
+    for (int i = 0; i < sizeof(pAuthor->placeOfBirth); ++i) {
+        pAuthor->placeOfBirth[i] = newPlaceOfBirth[i];
+    }
+
+    Output::print("New place of birth successfully saved");
+}
+
+void AuthorMenu::saveChanges(Author* pAuthor) {
+    int answer = Input::askInt(
+            "Are you sure you want to save changes?\n"
+            "1. Yes\n"
+            "2. No\n"
+            "3. Back"
+    );
+
+    bool run = true;
+
+    while (run) {
+        switch (answer) {
+            case 1:
+                AuthorStorage::save(*pAuthor);
+                run = false;
+                break;
+            case 2:
+                run = false;
+                break;
+            case 3:
+                run = false;
+                break;
+            default:
+                answer = Input::askInt("Invalid command. Try again");
+                break;
+        }
+    }
 }

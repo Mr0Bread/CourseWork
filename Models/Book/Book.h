@@ -4,6 +4,8 @@
 
 #ifndef COURSEWORK_BOOK_H
 #define COURSEWORK_BOOK_H
+#pragma pack(push)
+#pragma pack(1)
 
 struct Book {
     int id;
@@ -23,4 +25,5 @@ struct Book {
     }
 };
 
+#pragma pack(pop)
 #endif //COURSEWORK_BOOK_H

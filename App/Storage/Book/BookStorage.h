@@ -36,7 +36,7 @@ public:
 
     static bool doesMatch(Book book);
 
-    static void findById(int id, std::function<bool(Book, int)> func);
+    static void findById(int id, const std::function<bool(Book, int)>& func);
 
     static void findByTitle(const std::string& title);
 
@@ -55,6 +55,10 @@ public:
     static void findByPagesMoreThan(int pageQty);
 
     static void findByPagesLessThan(int pageQty);
+
+    static Book loadById(int id);
+
+    static void save(Book book);
 };
 
 

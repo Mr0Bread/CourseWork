@@ -47,6 +47,24 @@ public:
     static int assignExistingAuthorId();
 
     static int assignIdOfNewAuthor();
+
+    static void edit();
+
+    static Book loadBookToEdit();
+
+    static int getIdOfBookToEdit();
+
+    static void editTitle(Book* pBook);
+
+    static void editAuthorId(Book* pBook);
+
+    static void editYearOfRelease(Book* pBook);
+
+    static void editLanguage(Book* pBook);
+
+    static void editPageQuantity(Book* pBook);
+
+    static void saveChanges(Book* pBook);
 };
 
 

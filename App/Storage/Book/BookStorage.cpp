@@ -28,7 +28,7 @@ std::vector<Book> BookStorage::loadAll() {
     auto books = new Book[qtyOfBooksInFile];
 
     for (int i = 0; i < qtyOfBooksInFile; ++i) {
-        booksFile.read((char *) &books[i], getSizeOfBookStruct());
+        booksFile.read((char*) &books[i], getSizeOfBookStruct());
         booksVector.push_back(books[i]);
     }
 
@@ -82,7 +82,7 @@ int BookStorage::getQtyOfBooksInFile() {
         return 0;
     }
 
-    return booksFileSize/sizeOfBookStruct;
+    return booksFileSize / sizeOfBookStruct;
 }
 
 void BookStorage::saveToStorage(std::vector<Book> books) {
@@ -97,7 +97,7 @@ void BookStorage::saveToStorage(std::vector<Book> books) {
     std::ofstream booksFile(BOOK_FILE_NAME, std::ios::out | std::ios::binary);
 
     for (int i = 0; i < booksQty; ++i) {
-        booksFile.write((char *) &bookArray[i], getSizeOfBookStruct());
+        booksFile.write((char*) &bookArray[i], getSizeOfBookStruct());
     }
 
     delete[] bookArray;
@@ -108,7 +108,7 @@ bool BookStorage::doesMatch(Book book) {
     return book.id == idToUse;
 }
 
-void BookStorage::findById(int id, std::function<bool(Book, int)> func) {
+void BookStorage::findById(int id, const std::function<bool(Book, int)>& func) {
     auto books = loadAll();
     bool found = false;
 
@@ -283,4 +283,44 @@ void BookStorage::findByPagesLessThan(int pageQty) {
     if (!found) {
         Output::print("No records found");
     }
+}
+
+Book BookStorage::loadById(int id) {
+    auto books = loadAll();
+    Book bookToReturn{};
+
+    for (auto& book : books) {
+        if (book.id == id) {
+            bookToReturn = book;
+            break;
+        }
+    }
+
+    return bookToReturn;
+}
+
+void BookStorage::save(Book book) {
+    auto books = loadAll();
+
+    for (auto& existingBook : books) {
+        if (book.id == existingBook.id) {
+            existingBook.pageQty = book.pageQty;
+
+            for (int i = 0; i < sizeof(existingBook.language); ++i) {
+                existingBook.language[i] = book.language[i];
+            }
+
+            existingBook.yearOfRelease = book.yearOfRelease;
+            existingBook.authorId = book.authorId;
+
+            for (int i = 0; i < sizeof(existingBook.title); ++i) {
+                existingBook.title[i] = book.title[i];
+            }
+
+            break;
+        }
+    }
+
+    saveToStorage(books);
+    Output::print("Book saved");
 }

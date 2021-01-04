@@ -38,6 +38,20 @@ public:
     static void findByYearOfBirth();
 
     static void findByPlaceOfBirth();
+
+    static void edit();
+
+    static int getIdOfAuthorToEdit();
+
+    static void editName(Author* pAuthor);
+
+    static void editSurname(Author* pAuthor);
+
+    static void editYearOfBirth(Author* pAuthor);
+
+    static void editPlaceOfBirth(Author* pAuthor);
+
+    static void saveChanges(Author* pAuthor);
 };
 
 
